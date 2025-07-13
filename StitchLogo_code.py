@@ -58,13 +58,13 @@ def build_adaptive_template(
         needed = target_width - left_w - right_w
         center_stretched = center.resize((needed, target_height), Image.LANCZOS)
         out = Image.new("RGB", (target_width, target_height))
-        out.paste(left, (0, 0))
-        out.paste(center_stretched, (left_w, 0))
-        out.paste(right, (left_w + needed, 0))
+        out.paste(left,                  (0,            0))
+        out.paste(center_stretched,     (left_w,       0))
+        out.paste(right,                 (left_w+needed,0))
         return out
 
 # ——————————————————————————————
-# 3) Process single image: stitch photo + template
+# 3) Process a single image
 # ——————————————————————————————
 def process_image(
     photo: Image.Image,
@@ -89,57 +89,6 @@ def process_image(
     return out
 
 # ——————————————————————————————
-# 4) Streamlit UI
+# 4) Streamlit App
 # ——————————————————————————————
-# Template image path: place your logo template in the app folder with this name
-TEMPLATE_PATH = 'logo_template.jpeg'
-
-# Fixed ratios (no user adjustment)
-BASE_RATIO     = 0.1
-LEFT_FRAC      = 0.37
-CENTER_FRAC    = 0.38
-RIGHT_FRAC     = 1.0 - LEFT_FRAC - CENTER_FRAC
-SLICE_RATIOS   = (LEFT_FRAC, CENTER_FRAC, RIGHT_FRAC)
-
-st.title("📸 Photo + Logo Template Stitcher")
-
-# User can only adjust height exponent; explain its effect
-st.write(
-    "**Height Exponent:** Determines template bar thickness based on photo shape. "
-    "Higher values → thicker bar for tall images; lower values → thinner bar."
-)
-exponent = st.sidebar.slider(
-    "Height Exponent", min_value=0.1, max_value=2.0, value=0.8, step=0.1
-)
-
-photos = st.file_uploader(
-    "Upload Photos", type=["jpg", "jpeg", "png"], accept_multiple_files=True
-)
-
-if st.button("Process All"):  # unified zip generation
-    if photos:
-        try:
-            template = Image.open(TEMPLATE_PATH).convert("RGB")
-        except Exception:
-            st.error(f"Cannot load template from '{TEMPLATE_PATH}'.")
-        else:
-            zip_buf = BytesIO()
-            with zipfile.ZipFile(zip_buf, mode="w") as zf:
-                for photo_file in photos:
-                    photo = Image.open(photo_file).convert("RGB")
-                    photo = correct_orientation(photo)
-                    stitched = process_image(
-                        photo, template, BASE_RATIO, exponent, SLICE_RATIOS
-                    )
-                    img_buf = BytesIO()
-                    stitched.save(img_buf, format="JPEG")
-                    zf.writestr(f"stitched_{photo_file.name}", img_buf.getvalue())
-                    img_buf.close()
-            zip_buf.seek(0)
-            st.download_button(
-                "Download All as ZIP", data=zip_buf,
-                file_name="stitched_images.zip",
-                mime="application/zip"
-            )
-    else:
-        st.error("Please upload at least one photo.")
+TEMPLATE_PATH = 'logo_template.jpeg'  # Place your template in the app folder
