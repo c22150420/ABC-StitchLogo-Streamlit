@@ -95,7 +95,7 @@ def process_image(
 TEMPLATE_PATH = 'logo_template.jpeg'
 
 # Fixed ratios (no user adjustment)
-BASE_RATIO     = 1.0
+BASE_RATIO     = 0.1
 LEFT_FRAC      = 0.37
 CENTER_FRAC    = 0.38
 RIGHT_FRAC     = 1.0 - LEFT_FRAC - CENTER_FRAC
